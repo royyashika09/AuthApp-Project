@@ -1,5 +1,7 @@
 import {User} from "../models/user-model.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { verify } from "../config/verify-mail.js";
 
 export async function register (req, res) {
     try {
@@ -29,10 +31,19 @@ export async function register (req, res) {
             password: hashedPassword,
         });
 
+        //! Generating Token 
+        const token = jwt.sign({id: newUser, _id}, process.env.JWT_SECRET,{
+            expiresIn: "10m",
+        });
+
+        //! VERIFYING EMAIL
+        verify(token, email)
+
         res.status(201).json({
             success: true,
             message: "User Created",
-            data: newUser
+            data: newUser,
+            token
         });
 
 
